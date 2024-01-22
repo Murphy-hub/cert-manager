@@ -41,6 +41,23 @@ HACK_DIR ?= hack
 # Get a list of all binaries to be built
 CMDS := $(shell find ./cmd/ -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
+GOPROXY=https://goproxy.cn,direct
+PROG=bin/cert-manager
+SRCS=./cmd/controller/
+
+# git commit hash
+COMMIT_HASH=$(shell git rev-parse --short HEAD || echo "GitNotFound")
+# 编译日期
+BUILD_DATE=$(shell date '+%Y-%m-%d %H:%M:%S')
+# 编译条件
+CFLAGS = -ldflags "-s -w -X \"main.BuildVersion=${COMMIT_HASH}\" -X \"main.BuildDate=$(BUILD_DATE)\""
+
+release:
+	if [ ! -d "./bin/" ]; then \
+	mkdir bin; \
+	fi
+	GOPROXY=$(GOPROXY) CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(CFLAGS) -o $(PROG) $(SRCS)
+
 .PHONY: help
 help:
 	# This Makefile provides common wrappers around Bazel invocations.

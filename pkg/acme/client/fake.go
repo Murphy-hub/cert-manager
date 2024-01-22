@@ -37,6 +37,7 @@ type FakeACME struct {
 	FakeAccept                  func(ctx context.Context, chal *acme.Challenge) (*acme.Challenge, error)
 	FakeGetChallenge            func(ctx context.Context, url string) (*acme.Challenge, error)
 	FakeGetAuthorization        func(ctx context.Context, url string) (*acme.Authorization, error)
+	FakeRevokeAuthorization     func(ctx context.Context, url string) error
 	FakeWaitAuthorization       func(ctx context.Context, url string) (*acme.Authorization, error)
 	FakeRegister                func(ctx context.Context, a *acme.Account, prompt func(tosURL string) bool) (*acme.Account, error)
 	FakeGetReg                  func(ctx context.Context, url string) (*acme.Account, error)
@@ -102,6 +103,13 @@ func (f *FakeACME) GetAuthorization(ctx context.Context, url string) (*acme.Auth
 		return f.FakeGetAuthorization(ctx, url)
 	}
 	return nil, fmt.Errorf("GetAuthorization not implemented")
+}
+
+func (f *FakeACME) RevokeAuthorization(ctx context.Context, url string) error {
+	if f.FakeRevokeAuthorization != nil {
+		return f.FakeRevokeAuthorization(ctx, url)
+	}
+	return fmt.Errorf("RevokeAuthorization not implemented")
 }
 
 func (f *FakeACME) WaitAuthorization(ctx context.Context, url string) (*acme.Authorization, error) {

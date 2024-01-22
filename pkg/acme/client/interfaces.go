@@ -39,6 +39,7 @@ type Interface interface {
 	Accept(ctx context.Context, chal *acme.Challenge) (*acme.Challenge, error)
 	GetChallenge(ctx context.Context, url string) (*acme.Challenge, error)
 	GetAuthorization(ctx context.Context, url string) (*acme.Authorization, error)
+	RevokeAuthorization(ctx context.Context, url string) error
 	WaitAuthorization(ctx context.Context, url string) (*acme.Authorization, error)
 	Register(ctx context.Context, acct *acme.Account, prompt func(tosURL string) bool) (*acme.Account, error)
 	GetReg(ctx context.Context, url string) (*acme.Account, error)

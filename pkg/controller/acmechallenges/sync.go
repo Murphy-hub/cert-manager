@@ -351,7 +351,13 @@ func (c *controller) syncChallengeStatus(ctx context.Context, cl acmecl.Interfac
 		}
 	}
 	ch.Status.State = cmState
-
+	// 吊销 invalid 的 challenge，防止陷入假死状态
+	if cmState == acmeapi.StatusInvalid {
+		err := cl.RevokeAuthorization(ctx, ch.Spec.AuthorizationURL)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
