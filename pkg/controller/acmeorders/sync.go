@@ -175,6 +175,17 @@ func (c *controller) Sync(ctx context.Context, o *cmacme.Order) (err error) {
 		// TODO (@munnerz): instead of waiting for the ACME server to mark this
 		//  Order as failed, we could just mark the Order as failed as there is
 		//  no way that we will attempt and continue the order anyway.
+
+		// If the Challenge status is invalid, the Authorization will be revoked.
+		for _, challenge := range o.Status.Authorizations {
+			if challenge.InitialState == acmeapi.StatusInvalid {
+				err := cl.RevokeAuthorization(ctx, challenge.URL)
+				if err != nil {
+					return err
+				}
+				log.V(logf.DebugLevel).Info("Revoke authorization in invalid status")
+			}
+		}
 		log.V(logf.DebugLevel).Info("Update Order status as at least one Challenge has failed")
 		_, err := c.updateOrderStatus(ctx, cl, o)
 		if acmeErr, ok := err.(*acmeapi.Error); ok {
