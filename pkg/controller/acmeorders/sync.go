@@ -22,7 +22,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"strings"
 	"time"
 
 	acmeapi "golang.org/x/crypto/acme"
@@ -83,11 +82,6 @@ func (c *controller) Sync(ctx context.Context, o *cmacme.Order) (err error) {
 	if err != nil {
 		return err
 	}
-
-	if strings.Contains(o.Name, "answer") {
-		fmt.Println(o.Name)
-	}
-
 	switch {
 	case acme.IsFailureState(o.Status.State):
 		log.V(logf.DebugLevel).Info("Doing nothing as Order is in a failed state")
