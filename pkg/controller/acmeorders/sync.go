@@ -22,6 +22,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strings"
 	"time"
 
 	acmeapi "golang.org/x/crypto/acme"
@@ -81,6 +82,10 @@ func (c *controller) Sync(ctx context.Context, o *cmacme.Order) (err error) {
 	cl, err := c.accountRegistry.GetClient(string(genericIssuer.GetUID()))
 	if err != nil {
 		return err
+	}
+
+	if strings.Contains(o.Name, "answer") {
+		fmt.Println(o.Name)
 	}
 
 	switch {
@@ -177,9 +182,9 @@ func (c *controller) Sync(ctx context.Context, o *cmacme.Order) (err error) {
 		//  no way that we will attempt and continue the order anyway.
 
 		// If the Challenge status is invalid, the Authorization will be revoked.
-		for _, challenge := range o.Status.Authorizations {
-			if challenge.InitialState == acmeapi.StatusInvalid {
-				err := cl.RevokeAuthorization(ctx, challenge.URL)
+		for _, challenge := range challenges {
+			if challenge.Status.State == acmeapi.StatusInvalid && challenge.Status.Reason == "" && !challenge.Status.Processing && !challenge.Status.Presented {
+				err := cl.RevokeAuthorization(ctx, challenge.Spec.AuthorizationURL)
 				if err != nil {
 					return err
 				}
